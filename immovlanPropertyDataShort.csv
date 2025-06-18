@@ -1,0 +1,6 @@
+Link; Immovlan_code; Location; Subtype; Type; Price in €; Number of bedrooms
+https://immovlan.be/fr/detail/maison/a-vendre/8480/ichtegem/rbt70221/; RBT70221; Ichtegem; maison; house; 245000 ; 3; 
+https://immovlan.be/fr/detail/villa/a-vendre/1330/rixensart/vbc89345; VBC89345; Rixensart; villa; house; ; 4; 
+https://immovlan.be/fr/detail/rez-de-chaussee/a-vendre/8800/roeselare/rbt68306; RBT68306; Roeselare; rez-de-chaussee; appartment; 175000 ; 2; 
+https://immovlan.be/fr/detail/maison/a-vendre/8520/kuurne/rwc39858; RWC39858; Kuurne; maison; house; 189000 ; 3; 
+https://immovlan.be/fr/projectdetail/1151473-8427512; ; <- ERROR : 'NoneType' object has no attribute 'find'

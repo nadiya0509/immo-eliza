@@ -1,0 +1,13 @@
+env/
+__pycache__/
+main.py
+scraper.py
+immovlanPropertyDataShort.csv	 
+test.py
+immovlanPropertyLinksShort.txt
+requirements.txt
+zimmoHousesLinks.csv
+
+
+
+
