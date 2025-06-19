@@ -3,13 +3,15 @@ from scraperNoSelenium import ImmoVlanScraper
 try:
     scraper = ImmoVlanScraper()
 
-    # First run these two lines:
-    #scraper.get_links_of_houses()
+    # You can first run these two lines:
+    #scraper.get_links_of_properties()
     #scraper.save_links_of_properties("immovlanPropertyLinks.txt")
 
-    # Then run this line:
-    #scraper.read_links_of_properties("immovlanPropertyLinks.txt")
-    #scraper.save_data_of_properties("immovlanPropertyData.csv")
+    # ... and then run the two lines below:
+    scraper.scrape_data_of_properties("immovlanPropertyLinks.txt")
+    scraper.save_data_of_properties("immovlanPropertyData.csv")
+
+    # ... or you can run all four lines together.
     
 except Exception as ex:
     print(f"Running scraper failed: {ex}")
