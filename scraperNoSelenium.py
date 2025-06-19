@@ -1,6 +1,5 @@
 from fake_headers import Headers
 import random
-from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup as bs
 import re
@@ -8,9 +7,25 @@ import csv
 
 class ImmoVlanScraper:
     """
-    The filters below select only houses and apartments for sale in the locations
-    in the FILTER_LOCATIONS list (e.g. public sales are not selected).
-    Immoveb truncates output to 50 pages -> 1000 properties.
+    The file has methods to scrap immovlan website for properties
+    of certain type and location, and to write the links as well as 6 parameters
+    of the property into a csv file.
+    An extra file containing just links can also be produced.
+    
+    Use mainNoSelenium.py for execution.
+
+    The "noSelenium" in the name of the files means that selenium was not used to break through the "robot wall"
+    of the website, but the fake_headers library was used instead to mimic human activity.
+
+    The filters below select types of properties, sale, and location.
+    Note that not all properties will be shown because
+    immovlan truncates output to 50 pages -> 1000 properties.
+
+    The scraped 6 parameters as defined below are:
+    property_params="Link; Immovlan_code; Location; Subtype; Type; Price in €; Number of bedrooms"
+    Error in finding a particular parameter will produce a row with <- ERROR pointing to the missing parameter
+    and the rest parameters will be skipped.
+    Individual exception handling would have to be introduced to every parameter to mark with None-s all missing parameters.
     """
     
     TOP_URL="https://immovlan.be"
@@ -22,23 +37,16 @@ class ImmoVlanScraper:
     FIRST_PAGE_INDEX="noindex=1"
 
     def __init__(self) -> None:
-        
         self.property_links = [] # list of links per individual property
         self.property_data = [] # list of dictionary per house: "code":, "location":, "type":, "price":...
-        #self.HOUSES_SUBTYPES=['Maison','Villa', 'Immeuble mixte', 'Maison de maître','Bungalow','Fermette','Chalet','Château']
-        #self.APARTMENTS_SUBTYPES=['Appartement','Rez-de-chausée','Studio','Duplex','Penthouse','Loft','Triplex']                
-
+        
     def get_links_of_properties(self) -> None:
         """
         Retrieve links of properties on sale and save them in the list self.property_links.
-        Returns:
-            list[dict]: List of houses on sale with their data.
         """
         
         # Open first page per province
         province_page_link=self.TOP_URL+self.FILTER_SALE+self.FILTER_TYPE+self.FILTER_SUBTYPE+self.FILTER_LOCATION+self.FIRST_PAGE_INDEX
-        
-        #urljoin(TOP_URL,FILTER_SALE,FILTER_TYPE,FILTER_SUBTYPE,FILTER_LOCATION,FIRST_PAGE_INDEX)
             
         # Step through pages for this location
         morePages=True
@@ -70,13 +78,13 @@ class ImmoVlanScraper:
                     link_next_page=self.TOP_URL+href
                     province_page_link=link_next_page
                     break
-            if(link_next_page==""): # no next page finish link search
+            if(link_next_page==""): # no next page -> finish link search
                 morePages=False
             
 
     def save_links_of_properties(self,file_name) -> None:
         """
-        Saves data on properties to txt file
+        Saves list property_links to a txt file
         """
         with open(file_name, 'w') as file:
             for item in self.property_links:
@@ -89,9 +97,8 @@ class ImmoVlanScraper:
         """
         Reads file with links to individual properties, one per line, e.g.
         https://immovlan.be/fr/detail/maison/a-vendre/8480/ichtegem/rbt70221/
-        and fills in self.property_links list if it was empty (in the mainNoSelenium.py the two sets of methods
-        are executed separately), otherwise use already filled in list (filled after
-        executing the first set of two methods).
+        and fills in self.property_links list if it was empty (case when in the mainNoSelenium.py
+        methods 1,2 were chosen not to be executed or executed separately from methods 3,4).
         """
         if (len(self.property_links) == 0):
             with open(file_name, 'r') as file:
@@ -121,6 +128,8 @@ class ImmoVlanScraper:
         Assumes that properties are of type "house" or "apartment" (based on sub-types in the liks themselves
         and whether they belong to self.HOUSES_SUBTYPES or self.APARTMENTS_SUBTYPES);
         other sub-types will get type "other", and if sub-type can't be scraped from the link itself - type "unknown".
+        
+        Error in finding a particular parameter will produce a row with <- ERROR pointing to the missing parameter. 
         """
         HOUSES_SUBTYPES=['maison','villa', 'immeuble-mixte','maison-de-maitre','bungalow','fermette','chalet','chateau']
         APARTMENTS_SUBTYPES=['appartement','rez-de-chaussee','studio','duplex','penthouse','loft','triplex']
@@ -149,7 +158,7 @@ class ImmoVlanScraper:
                 location = main_span.find('span', class_='d-none d-lg-inline').text.strip().split('- ')[-1]; property_data += (location+column_separ)
                 sub_type_property_detail = main_span.find(string=True, recursive=False).text.strip()
                 
-                # property type/subtype from the link itself
+                # determine property type/subtype from the link itself
                 match = re.search(r'/detail/([^/]+)/', link_property)
                 if match:
                     sub_type_property = match.group(1)
@@ -179,7 +188,7 @@ class ImmoVlanScraper:
 
             self.property_data.append(property_data)        
 
-        print(f"Done reading property data from {file_name}") 
+        print(f"Done reading property data.") 
 
 
     def save_data_of_properties(self,file_name):
